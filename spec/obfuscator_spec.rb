@@ -14,6 +14,21 @@ RSpec.describe Kantox::Obfuscator do
     expect(subject.call(1_234_567_890.12)).to eq('12xxxxxxx0.12')
   end
 
+  context 'edge cases' do
+    it 'very short string' do
+      expect(subject.call(1)).to eq '1'
+      expect(subject.call('1')).to eq '1'
+    end
+
+    it 'other types' do
+      expect(subject.call(nil)).to be_nil
+    end
+
+    it 'empty hash' do
+      expect(subject.call({})).to eq({})
+    end
+  end
+
   context 'with alternative replacement' do
     subject do
       described_class.new(replacement: '-')
@@ -48,6 +63,31 @@ RSpec.describe Kantox::Obfuscator do
         black: 'thxx xxxx xx xxxxxxated',
         white: 'this will be kept'
       )
+    end
+  end
+
+  context 'arrays' do
+    subject do
+      described_class.new(keys: %i[black listed])
+    end
+
+    it 'obfuscates each element' do
+      input = [
+        'lorem ipsum',
+        'dolor sit etiam',
+        {
+          black: 'this will be obfuscated',
+          white: 'this will be kept'
+        }
+      ]
+      expect(subject.call(input)).to eq([
+        'loxxx xpsum',
+        'doxxx xxx xtiam',
+        {
+          black: 'thxx xxxx xx xxxxxxated',
+          white: 'this will be kept'
+        }
+      ])
     end
   end
 end

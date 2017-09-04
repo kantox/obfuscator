@@ -28,20 +28,21 @@ module Kantox
     option :replacement, reader: :private, default: -> { 'x' }
     option :keys, reader: :private, default: -> { [] }
 
-    def call(target)
-      case target
-      when String
-        obfuscate_string(target)
-      when Numeric
-        obfuscate_string(target.to_s)
-      when Hash
-        obfuscate_hash(target)
-      else
-        target
+    def call(input)
+      case input
+      when String then obfuscate_string(input)
+      when Numeric then obfuscate_numeric(input)
+      when Hash then obfuscate_hash(input)
+      when Array then obfuscate_array(input)
+      else input
       end
     end
 
     private
+
+    def obfuscate_numeric(numeric)
+      call(numeric.to_s)
+    end
 
     def obfuscate_hash(hash)
       hash.each_with_object({}) do |(key, value), result|
@@ -51,6 +52,10 @@ module Kantox
 
     def obfuscate_string(string)
       string.gsub(replacer, replacement)
+    end
+
+    def obfuscate_array(array)
+      array.map(&method(:call))
     end
 
     def replacer
